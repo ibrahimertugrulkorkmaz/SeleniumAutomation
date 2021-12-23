@@ -4,10 +4,8 @@ package test;
         import org.openqa.selenium.WebDriver;
         import org.openqa.selenium.WebElement;
         import org.openqa.selenium.chrome.ChromeDriver;
-
         import java.io.File;
-        import java.io.FileNotFoundException;
-        import java.io.PrintStream;
+        import java.io.FileWriter;
         import java.util.List;
 
 
@@ -21,7 +19,7 @@ public class ProductsOnSaleCheckListRandW {
         driver.get("https://www.n11.com/kampanyalar");
         driver.manage().window().maximize();
 
-        //Moda Campaign Promotion webpage defined differently than rest of other categories, xpath was opening from span section
+        //'Moda' Campaign Promotion webpage defined differently than rest of other categories, xpath was opening from span section
         WebElement Moda = driver.findElement(By.xpath("//*[@id=\"contentCampaignPromotion\"]/div/div[2]/div/div[2]/div/div/ul/li[2]/span"));
         Moda.click();
         try
@@ -33,6 +31,7 @@ public class ProductsOnSaleCheckListRandW {
             System.out.println(e);
         }
         System.out.println("Moda page opening successful");
+
 
         //set variable for xpath link cause whole Campaign Promotion webpage xpaths were ordered by id. Pet 11 category is disabled right now as it seems like. So maybe can add skip the order on 10th page if needed on future.
         for (int i = 3; i < 12; i++) {
@@ -47,13 +46,33 @@ public class ProductsOnSaleCheckListRandW {
             {
                 System.out.println(e);
             }
-            System.out.println("Page opening successful");
-
-
+            System.out.println("Page opening action is successful");
 
         }
 
-        // section of category counter defination
+        try{
+            File silinecekDosya = new File("csv/CsvOutput.csv");
+
+            //If the file does exist control
+            if (!silinecekDosya.exists())
+                throw new IllegalArgumentException("Cannot find csv file"
+                        + silinecekDosya.getAbsolutePath());
+
+            if (silinecekDosya.delete()) {
+                System.out.println("Csv file cleared successfully");
+            } else {
+                System.out.println("Clearing action not successful");
+            }
+
+        }   catch(Exception e)
+
+        {
+            e.printStackTrace();
+        }
+
+
+
+        // section of category counter definition
         int d = 2;
         // loop which gives output of categories
         for (int e= 2; e < 11; e++) {
@@ -67,24 +86,32 @@ public class ProductsOnSaleCheckListRandW {
                 for (int a = 0; a < elements.size(); a++) {
                     System.out.println(elements.get(a).getAttribute("href"));
                     System.out.println(name);
-
                     try {
-
-                        PrintStream ps = new PrintStream(new File("csv/CsvOutput.csv"));
-                        ps.print(elements);
-
-                    } catch (FileNotFoundException ex) {
+                        FileWriter fwriter=new FileWriter("csv/CsvOutput.csv",true);
+                        fwriter.write(name);
+                        fwriter.write("\n");
+                        fwriter.write(elements.get(a).getAttribute("href"));
+                        fwriter.write("\n");
+                        fwriter.close();
+                    }catch (Exception ex)
+                    {
                         System.out.println("Error while exporting data to csv file");
+                        System.out.println(ex.getMessage());
                     }
+
+
+
 
                 }
 
             }
-            //adds +1 to section category to keep continue till whole items listement done
+            //adds +1 to section category number so we keep getting items from next section
             d = d +1 ;
 
         }
-
+        //closing driver after all process is done, added for to keep memory/processor usage on low level
+        driver.close();
     }
+
 }
 
